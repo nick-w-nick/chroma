@@ -31,10 +31,9 @@ pub struct FetchSegmentOperator {
     pub(crate) sysdb: Box<SysDb>,
     pub collection_uuid: CollectionUuid,
     pub collection_version: u32,
-    // TODO: Enforce segments uuid
-    pub metadata_uuid: Option<IndexUuid>,
-    pub record_uuid: Option<IndexUuid>,
-    pub vector_uuid: Option<IndexUuid>,
+    pub metadata_uuid: IndexUuid,
+    pub record_uuid: IndexUuid,
+    pub vector_uuid: IndexUuid,
 }
 
 type FetchSegmentInput = ();
@@ -106,7 +105,7 @@ impl FetchSegmentOperator {
         self.sysdb
             .clone()
             .get_segments(
-                segment_id.map(|id| id.0),
+                Some(segment_id.0),
                 Some(segment_type.into()),
                 Some(scope),
                 self.collection_uuid,
