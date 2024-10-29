@@ -13,6 +13,7 @@ members = [
    "rust/types",
    "rust/worker",
    "rust/test",
+   "rust/wal3",
 ]
 
 [workspace.dependencies]
