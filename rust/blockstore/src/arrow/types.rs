@@ -17,7 +17,7 @@ pub trait ArrowWriteableKey: Key + Default {
     ) -> BlockKeyArrowBuilder;
 }
 
-pub trait ArrowWriteableValue: Value {
+pub(crate) trait ArrowWriteableValue: Value {
     type ReadableValue<'referred_data>: ArrowReadableValue<'referred_data>;
 
     fn offset_size(item_count: usize) -> usize;

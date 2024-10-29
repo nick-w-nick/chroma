@@ -9,7 +9,7 @@ use super::memory::reader_writer::{
 };
 use super::memory::storage::{Readable, Writeable};
 use chroma_error::{ChromaError, ErrorCodes};
-use chroma_types::DataRecord;
+use chroma_types::{DataRecord, SpannPostingList};
 use roaring::RoaringBitmap;
 use std::fmt::{Debug, Display};
 use std::mem::size_of;
@@ -129,6 +129,12 @@ impl<'a> Value for DataRecord<'a> {
 impl<'a> Value for &DataRecord<'a> {
     fn get_size(&self) -> usize {
         DataRecord::get_size(self)
+    }
+}
+
+impl<'a> Value for &SpannPostingList<'a> {
+    fn get_size(&self) -> usize {
+        self.compute_size()
     }
 }
 
