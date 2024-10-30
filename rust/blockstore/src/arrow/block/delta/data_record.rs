@@ -18,7 +18,7 @@ use std::{collections::BTreeMap, sync::Arc};
 
 // Convenience type for the storage entry
 // (id, embedding, metadata, document)
-type DataRecordStorageEntry = (String, Vec<f32>, Option<Vec<u8>>, Option<String>);
+pub type DataRecordStorageEntry = (String, Vec<f32>, Option<Vec<u8>>, Option<String>);
 
 #[derive(Debug)]
 struct Inner {

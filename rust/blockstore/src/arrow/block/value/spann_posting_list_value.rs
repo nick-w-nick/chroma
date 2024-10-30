@@ -5,7 +5,10 @@ use chroma_types::SpannPostingList;
 
 use crate::{
     arrow::{
-        block::delta::{spann_posting_list_delta::SpannPostingListDelta, BlockDelta, BlockStorage},
+        block::delta::{
+            spann_posting_list_delta::{SpannPostingListDelta, SpannPostingListDeltaEntry},
+            BlockDelta, BlockStorage,
+        },
         types::{ArrowReadableValue, ArrowWriteableKey, ArrowWriteableValue},
     },
     key::KeyWrapper,
@@ -48,6 +51,8 @@ impl ArrowWriteableValue for &SpannPostingList<'_> {
 }
 
 impl<'referred_data> ArrowReadableValue<'referred_data> for SpannPostingList<'referred_data> {
+    type OwnedReadableValue = SpannPostingListDeltaEntry;
+
     fn get(array: &'referred_data Arc<dyn Array>, index: usize) -> Self {
         let as_struct_array = array.as_any().downcast_ref::<StructArray>().unwrap();
 
@@ -117,5 +122,13 @@ impl<'referred_data> ArrowReadableValue<'referred_data> for SpannPostingList<'re
         delta: &mut BlockDelta,
     ) {
         delta.add(prefix, key, &value);
+    }
+
+    fn to_owned(self) -> Self::OwnedReadableValue {
+        (
+            self.doc_offset_ids.to_vec(),
+            self.doc_versions.to_vec(),
+            self.doc_embeddings.to_vec(),
+        )
     }
 }

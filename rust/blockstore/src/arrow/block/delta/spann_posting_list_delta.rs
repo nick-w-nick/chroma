@@ -18,7 +18,7 @@ use crate::{
 
 use super::BlockKeyArrowBuilder;
 
-type SpannPostingListDeltaEntry = (Vec<u32>, Vec<u32>, Vec<f32>);
+pub type SpannPostingListDeltaEntry = (Vec<u32>, Vec<u32>, Vec<f32>);
 
 #[derive(Debug)]
 struct Inner {
