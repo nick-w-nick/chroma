@@ -16,6 +16,7 @@ use crate::{
 
 impl ArrowWriteableValue for &SpannPostingList<'_> {
     type ReadableValue<'referred_data> = SpannPostingList<'referred_data>;
+    type OwnedReadableValue = SpannPostingListDeltaEntry;
 
     // This method is only called for SingleColumnStorage.
     fn offset_size(_: usize) -> usize {
@@ -48,11 +49,20 @@ impl ArrowWriteableValue for &SpannPostingList<'_> {
     fn get_delta_builder() -> BlockStorage {
         BlockStorage::SpannPostingListDelta(SpannPostingListDelta::new())
     }
+
+    fn get_owned_value_from_delta(
+        prefix: &str,
+        key: KeyWrapper,
+        delta: &BlockDelta,
+    ) -> Option<Self::OwnedReadableValue> {
+        match &delta.builder {
+            BlockStorage::SpannPostingListDelta(builder) => builder.get_owned_value(prefix, key),
+            _ => panic!("Invalid builder type"),
+        }
+    }
 }
 
 impl<'referred_data> ArrowReadableValue<'referred_data> for SpannPostingList<'referred_data> {
-    type OwnedReadableValue = SpannPostingListDeltaEntry;
-
     fn get(array: &'referred_data Arc<dyn Array>, index: usize) -> Self {
         let as_struct_array = array.as_any().downcast_ref::<StructArray>().unwrap();
 
@@ -122,13 +132,5 @@ impl<'referred_data> ArrowReadableValue<'referred_data> for SpannPostingList<'re
         delta: &mut BlockDelta,
     ) {
         delta.add(prefix, key, &value);
-    }
-
-    fn to_owned(self) -> Self::OwnedReadableValue {
-        (
-            self.doc_offset_ids.to_vec(),
-            self.doc_versions.to_vec(),
-            self.doc_embeddings.to_vec(),
-        )
     }
 }

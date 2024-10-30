@@ -262,6 +262,17 @@ impl SingleColumnStorage<String> {
 
         (schema.into(), vec![prefix_arr, key_arr, value_arr])
     }
+
+    pub fn get_owned_value(&self, prefix: &str, key: KeyWrapper) -> Option<String> {
+        let inner = self.inner.read();
+        inner
+            .storage
+            .get(&CompositeKey {
+                prefix: prefix.to_string(),
+                key,
+            })
+            .cloned()
+    }
 }
 
 impl SingleColumnStorage<Vec<u32>> {
@@ -318,6 +329,17 @@ impl SingleColumnStorage<Vec<u32>> {
 
         (schema.into(), vec![prefix_arr, key_arr, value_arr])
     }
+
+    pub fn get_owned_value(&self, prefix: &str, key: KeyWrapper) -> Option<Vec<u32>> {
+        let inner = self.inner.read();
+        inner
+            .storage
+            .get(&CompositeKey {
+                prefix: prefix.to_string(),
+                key,
+            })
+            .cloned()
+    }
 }
 
 impl SingleColumnStorage<u32> {
@@ -360,6 +382,17 @@ impl SingleColumnStorage<u32> {
         }
 
         (schema.into(), vec![prefix_arr, key_arr, value_arr])
+    }
+
+    pub fn get_owned_value(&self, prefix: &str, key: KeyWrapper) -> Option<u32> {
+        let inner = self.inner.read();
+        inner
+            .storage
+            .get(&CompositeKey {
+                prefix: prefix.to_string(),
+                key,
+            })
+            .cloned()
     }
 }
 
@@ -414,5 +447,16 @@ impl SingleColumnStorage<RoaringBitmap> {
         }
 
         (schema.into(), vec![prefix_arr, key_arr, value_arr])
+    }
+
+    pub fn get_owned_value(&self, prefix: &str, key: KeyWrapper) -> Option<RoaringBitmap> {
+        let inner = self.inner.read();
+        inner
+            .storage
+            .get(&CompositeKey {
+                prefix: prefix.to_string(),
+                key,
+            })
+            .cloned()
     }
 }

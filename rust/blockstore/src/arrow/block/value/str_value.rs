@@ -13,6 +13,7 @@ use std::sync::Arc;
 
 impl ArrowWriteableValue for String {
     type ReadableValue<'referred_data> = &'referred_data str;
+    type OwnedReadableValue = String;
 
     fn offset_size(item_count: usize) -> usize {
         bit_util::round_upto_multiple_of_64((item_count + 1) * 4)
@@ -39,11 +40,20 @@ impl ArrowWriteableValue for String {
     fn get_delta_builder() -> BlockStorage {
         BlockStorage::String(SingleColumnStorage::new())
     }
+
+    fn get_owned_value_from_delta(
+        prefix: &str,
+        key: KeyWrapper,
+        delta: &BlockDelta,
+    ) -> Option<Self::OwnedReadableValue> {
+        match &delta.builder {
+            BlockStorage::String(builder) => builder.get_owned_value(prefix, key),
+            _ => panic!("Invalid builder type"),
+        }
+    }
 }
 
 impl<'referred_data> ArrowReadableValue<'referred_data> for &'referred_data str {
-    type OwnedReadableValue = String;
-
     fn get(array: &'referred_data Arc<dyn Array>, index: usize) -> &'referred_data str {
         let array = array.as_any().downcast_ref::<StringArray>().unwrap();
         array.value(index)
@@ -55,9 +65,5 @@ impl<'referred_data> ArrowReadableValue<'referred_data> for &'referred_data str 
         delta: &mut BlockDelta,
     ) {
         delta.add(prefix, key, value.to_string());
-    }
-
-    fn to_owned(self) -> Self::OwnedReadableValue {
-        self.to_string()
     }
 }

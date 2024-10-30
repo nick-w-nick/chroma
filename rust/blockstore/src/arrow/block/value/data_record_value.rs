@@ -16,6 +16,7 @@ use std::sync::Arc;
 
 impl ArrowWriteableValue for &DataRecord<'_> {
     type ReadableValue<'referred_data> = DataRecord<'referred_data>;
+    type OwnedReadableValue = DataRecordStorageEntry;
 
     fn offset_size(item_count: usize) -> usize {
         let id_offset = bit_util::round_upto_multiple_of_64((item_count + 1) * 4);
@@ -48,11 +49,16 @@ impl ArrowWriteableValue for &DataRecord<'_> {
     fn get_delta_builder() -> BlockStorage {
         BlockStorage::DataRecord(DataRecordStorage::new())
     }
+
+    fn get_owned_value_from_delta(prefix: &str, key: KeyWrapper, delta: &BlockDelta) -> Option<Self::OwnedReadableValue> {
+        match &delta.builder {
+            BlockStorage::DataRecord(builder) => builder.get_owned_value(prefix, key),
+            _ => panic!("Invalid builder type"),
+        }
+    }
 }
 
 impl<'referred_data> ArrowReadableValue<'referred_data> for DataRecord<'referred_data> {
-    type OwnedReadableValue = DataRecordStorageEntry;
-
     fn get(array: &'referred_data Arc<dyn Array>, index: usize) -> Self {
         let as_struct_array = array.as_any().downcast_ref::<StructArray>().unwrap();
 
@@ -122,22 +128,5 @@ impl<'referred_data> ArrowReadableValue<'referred_data> for DataRecord<'referred
         delta: &mut BlockDelta,
     ) {
         delta.add(prefix, key, &value);
-    }
-
-    fn to_owned(self) -> Self::OwnedReadableValue {
-        let metadata = match &self.metadata {
-            Some(metadata) => {
-                let metadata_proto = Into::<UpdateMetadata>::into(metadata.clone());
-                let metadata_as_bytes = metadata_proto.encode_to_vec();
-                Some(metadata_as_bytes)
-            }
-            None => None,
-        };
-        (
-            self.id.to_string(),
-            self.embedding.to_vec(),
-            metadata,
-            self.document.map(|s| s.to_string()),
-        )
     }
 }

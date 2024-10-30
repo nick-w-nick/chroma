@@ -19,12 +19,18 @@ pub trait ArrowWriteableKey: Key + Default {
 
 pub(crate) trait ArrowWriteableValue: Value {
     type ReadableValue<'referred_data>: ArrowReadableValue<'referred_data>;
+    type OwnedReadableValue;
 
     fn offset_size(item_count: usize) -> usize;
     fn validity_size(item_count: usize) -> usize;
     fn add(prefix: &str, key: KeyWrapper, value: Self, delta: &BlockDelta);
     fn delete(prefix: &str, key: KeyWrapper, delta: &BlockDelta);
     fn get_delta_builder() -> BlockStorage;
+    fn get_owned_value_from_delta(
+        prefix: &str,
+        key: KeyWrapper,
+        delta: &BlockDelta,
+    ) -> Option<Self::OwnedReadableValue>;
 }
 
 pub trait ArrowReadableKey<'referred_data>: Key + PartialOrd {
@@ -38,8 +44,6 @@ pub trait ArrowReadableKey<'referred_data>: Key + PartialOrd {
 }
 
 pub trait ArrowReadableValue<'referred_data>: Sized {
-    type OwnedReadableValue;
-
     fn get(array: &'referred_data Arc<dyn Array>, index: usize) -> Self;
     fn add_to_delta<K: ArrowWriteableKey>(
         prefix: &str,
@@ -47,5 +51,4 @@ pub trait ArrowReadableValue<'referred_data>: Sized {
         value: Self,
         delta: &mut BlockDelta,
     );
-    fn to_owned(self) -> Self::OwnedReadableValue;
 }
