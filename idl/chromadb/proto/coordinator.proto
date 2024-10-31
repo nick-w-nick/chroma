@@ -117,6 +117,7 @@ message DeleteCollectionRequest {
   string id = 1;
   string tenant = 2;
   string database = 3;
+  repeated string segment_ids = 4;
 }
 
 message DeleteCollectionResponse {
