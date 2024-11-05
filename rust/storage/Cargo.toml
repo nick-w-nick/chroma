@@ -25,6 +25,7 @@ parking_lot = { workspace = true }
 
 chroma-config = { workspace = true }
 chroma-error = { workspace = true }
+sync42 = { path = "../../../blue/sync42", version = "0.11" }
 
 [dev-dependencies]
 "rand" = { workspace = true}
