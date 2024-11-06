@@ -1,11 +1,4 @@
-//! This is an admission controller suitable for deduping requests to object storage.
-//!
-//! It differs from the original admissioncontrolleds3 design in the following ways:
-//! - It does not directly store the future to be awaited in a map.  This pattern is broken because
-//!   it will call `poll` on the same future multiple times, which is not allowed by the contract
-//!   with poll.  It's an accident that it works today and will likely result in undefined behavior
-//!   some day.
-//! - It acquires tokens on a per-prefix basis.
+//! This is an admission controller suitable for limiting the number of outstanding requests to object storage.
 
 use std::fmt::{Debug, Display};
 use std::hash::Hash;
